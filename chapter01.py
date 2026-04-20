@@ -6,6 +6,29 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
+    import marimo as mo
+
+    return (mo,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Introduction
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Finding Key Connectors
+    """)
+    return
+
+
+@app.cell
+def _():
     users = [
         {"id": 0, "name": "Hero"},
         {"id": 1, "name": "Dunn"},
@@ -82,6 +105,14 @@ def _(number_of_friends, users):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ##Data Scientists You May Know
+    """)
+    return
+
+
 @app.cell
 def _(friendships):
     def foaf_ids_bad(user):
@@ -121,7 +152,7 @@ def _(friendships):
             if foaf_id != user_id and foaf_id not in friendships[user_id]
         )
 
-    return (friends_of_friends,)
+    return Counter, friends_of_friends
 
 
 @app.cell
@@ -170,7 +201,127 @@ def _(data_scientistis_who_like):
 
 
 @app.cell
+def _(interests):
+    from collections import defaultdict
+
+    user_ids_by_interest = defaultdict(list)
+
+    for user_id, interest in interests:
+        user_ids_by_interest[interest].append(user_id)
+
+    interests_by_user_id = defaultdict(list)
+
+    for user_id, interest in interests:
+        interests_by_user_id[user_id].append(interest)
+    return defaultdict, interests_by_user_id, user_ids_by_interest
+
+
+@app.cell
+def _(Counter, interests_by_user_id, user_ids_by_interest):
+    def most_commen_interests_with(user):
+        return Counter(
+            interested_user_id
+            for interest in interests_by_user_id[user['id']]
+            for interested_user_id in user_ids_by_interest[interest]
+            if interested_user_id != user['id']
+        )
+
+    return (most_commen_interests_with,)
+
+
+@app.cell
+def _(most_commen_interests_with, users):
+    most_commen_interests_with(users[0])
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Salaries and Experience
+    """)
+    return
+
+
+@app.cell
 def _():
+    salaries_and_tenures = [
+        (83000, 8.7),
+        (88000, 8.1),
+        (48000, 0.7),
+        (76000, 6),
+        (69000, 6.5),
+        (76000, 7.5),
+        (60000, 2.5),
+        (83000, 10),
+        (48000, 1.9),
+        (63000, 4.2),
+    ]
+    return (salaries_and_tenures,)
+
+
+@app.cell
+def _(defaultdict, salaries_and_tenures):
+    salary_by_tenure = defaultdict(list)
+
+    for salary, tenure in salaries_and_tenures:
+        salary_by_tenure[tenure].append(salary)
+
+    average_salary_by_tenure = {
+        tenure: sum(salaries) / len(salaries)
+        for tenure, salaries in salary_by_tenure.items()
+    }
+
+    print(average_salary_by_tenure)
+    return
+
+
+@app.function
+def tenure_bucket(tenure):
+    if tenure < 2:
+        return 'less than two'
+    elif tenure < 5:
+        return 'between two and five'
+    else:
+        return 'more than five'
+
+
+@app.cell
+def _(defaultdict, salaries_and_tenures):
+    salary_by_tenure_bucket = defaultdict(list)
+
+    for s, t in salaries_and_tenures:
+        bucket = tenure_bucket(t)
+        salary_by_tenure_bucket[bucket].append(s)
+
+    average_salary_by_bucket = {
+        bucket: sum(salaries) / len(salaries)
+        for bucket, salaries in salary_by_tenure_bucket.items()
+    }
+
+    print(average_salary_by_bucket)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Topics of Interest
+    """)
+    return
+
+
+@app.cell
+def _(Counter, interests):
+    words_and_counts = Counter(
+        word
+        for user, interest in interests
+        for word in interest.lower().split()
+    )
+
+    for word, count, in words_and_counts.most_common():
+        if count > 1:
+            print(word, count)
     return
 
 
